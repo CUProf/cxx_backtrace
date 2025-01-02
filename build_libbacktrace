@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cd libbacktrace
+./configure --prefix=$(pwd)/backtrace --enable-shared --disable-static
+
+make -j$(nproc)
+make install
