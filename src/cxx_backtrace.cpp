@@ -6,6 +6,7 @@
 void *__bt_state = nullptr;
 
 std::string backtrace_str;
+int bt_index = 0;
 
 int bt_callback(void *, uintptr_t, const char *filename, int lineno, const char *function) {
   /// demangle function name
@@ -32,7 +33,8 @@ int get_bt_callback(void *, uintptr_t, const char *filename, int lineno, const c
   }
 
   if (filename && func_name) {
-    backtrace_str += std::string(filename) + ":" + std::to_string(lineno) + " " + func_name + "\n";
+    backtrace_str += "b-" + std::to_string(bt_index) + " " + std::string(filename) + ":" + std::to_string(lineno) + " " + func_name + "\n";
+    bt_index++;
   }
   return 0;
 }
