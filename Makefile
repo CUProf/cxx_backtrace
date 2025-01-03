@@ -48,8 +48,6 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
 $(OBJ_DIR)%.o: $(SRC_DIR)/*/%.cpp
 	$(CXX) $(INCLUDES) $(CFLAGS) -fPIC -c $< -o $@
 
-libbacktrace: $(BACKTRACE_DIR)/lib64/libbacktrace.so
-
 
 .PHONY: clean
 clean:
