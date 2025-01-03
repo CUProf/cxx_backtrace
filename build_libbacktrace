@@ -1,9 +1,11 @@
 #!/bin/bash
 
 cd libbacktrace
+prefix_dir=$(pwd)/backtrace
+
 mkdir -p build
 cd build
-../configure --prefix=$(pwd)/../backtrace --enable-shared --disable-static
+../configure --prefix=$prefix_dir --enable-shared --disable-static
 
 make -j$(nproc)
 make install
