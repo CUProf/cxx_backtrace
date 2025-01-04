@@ -69,6 +69,7 @@ std::string get_back_trace() {
     abort();
   }
   backtrace_str.clear();
+  bt_index = 0;
   backtrace_full((backtrace_state *)__bt_state, 0, get_bt_callback, bt_error_callback, nullptr);
 
   return backtrace_str;
