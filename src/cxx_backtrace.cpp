@@ -6,24 +6,11 @@
 void *__bt_state = nullptr;
 
 std::string backtrace_str;
+std::vector<std::string> backtraces;
 int bt_index = 0;
+int bt_keep = -1;
 
 int bt_callback(void *, uintptr_t, const char *filename, int lineno, const char *function) {
-  /// demangle function name
-  const char *func_name = function;
-  int status;
-  char *demangled = abi::__cxa_demangle(function, nullptr, nullptr, &status);
-  if (status == 0) {
-    func_name = demangled;
-  }
-
-  if (filename && func_name) {
-    printf("%s:%d in function %s\n", filename, lineno, func_name);
-  }
-  return 0;
-}
-
-int get_bt_callback(void *, uintptr_t, const char *filename, int lineno, const char *function) {
   /// demangle function name
   const char *func_name = function;
   int status;
@@ -39,6 +26,25 @@ int get_bt_callback(void *, uintptr_t, const char *filename, int lineno, const c
   return 0;
 }
 
+int get_bt_callback(void *, uintptr_t, const char *filename, int lineno, const char *function) {
+  if (bt_keep != -1 && bt_index >= bt_keep) {
+    return 0;
+  }
+  /// demangle function name
+  const char *func_name = function;
+  int status;
+  char *demangled = abi::__cxa_demangle(function, nullptr, nullptr, &status);
+  if (status == 0) {
+    func_name = demangled;
+  }
+
+  if (filename && func_name) {
+    backtraces.push_back(std::string(filename) + ":" + std::to_string(lineno) + " " + func_name);
+    bt_index++;
+  }
+  return 0;
+}
+
 void bt_error_callback(void *, const char *msg, int errnum) {
   printf("Error %d occurred when getting the stacktrace: %s", errnum, msg);
 }
@@ -49,28 +55,40 @@ void bt_error_callback_create(void *data, const char *msg, int errnum) {
   *status = false;
 }
 
-bool init_back_trace(const char *filename) {
+bool init_backtrace(const char *filename) {
   bool status = true;
   __bt_state = backtrace_create_state(filename, 0, bt_error_callback_create, (void *)status);
   return status;
 }
 
-void print_back_trace() {
-  if (!__bt_state) { /// make sure init_back_trace() is called
-    printf("Make sure init_back_trace() is called before calling print_stack_trace()\n");
-    abort();
-  }
-  backtrace_full((backtrace_state *)__bt_state, 0, bt_callback, bt_error_callback, nullptr);
-}
-
-std::string get_back_trace() {
-  if (!__bt_state) { /// make sure init_back_trace() is called
-    printf("Make sure init_back_trace() is called before calling print_stack_trace()\n");
+std::string print_backtrace(int verbose) {
+  if (!__bt_state) { /// make sure init_backtrace() is called
+    printf("Make sure init_backtrace() is called before calling print_stack_trace()\n");
     abort();
   }
   backtrace_str.clear();
   bt_index = 0;
+  backtrace_full((backtrace_state *)__bt_state, 0, bt_callback, bt_error_callback, nullptr);
+
+  if (verbose) {
+    printf("%s\n", backtrace_str.c_str());
+    fflush(stdout);
+  }
+  return backtrace_str;
+}
+
+/*
+* keep = -1, get all backtraces
+*/
+std::vector<std::string> get_backtrace(int keep) {
+  if (!__bt_state) { /// make sure init_backtrace() is called
+    printf("Make sure init_backtrace() is called before calling print_stack_trace()\n");
+    abort();
+  }
+  backtraces.clear();
+  bt_index = 0;
+  bt_keep = keep;
   backtrace_full((backtrace_state *)__bt_state, 0, get_bt_callback, bt_error_callback, nullptr);
 
-  return backtrace_str;
+  return backtraces;
 }
