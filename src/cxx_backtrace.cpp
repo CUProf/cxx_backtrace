@@ -39,7 +39,7 @@ int get_bt_callback(void *, uintptr_t, const char *filename, int lineno, const c
   }
 
   if (filename && func_name) {
-    backtraces.push_back(std::string(filename) + ":" + std::to_string(lineno) + " " + func_name);
+    backtraces.push_back("b-" + std::to_string(bt_index) + " " + std::string(filename) + ":" + std::to_string(lineno) + " " + func_name);
     bt_index++;
   }
   return 0;
