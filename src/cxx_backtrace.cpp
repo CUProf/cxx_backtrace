@@ -26,6 +26,10 @@ int bt_callback(void *, uintptr_t, const char *filename, int lineno, const char 
   return 0;
 }
 
+bool starts_with(const std::string& filename, const std::string& prefix) {
+    return filename.compare(0, prefix.size(), prefix) == 0;
+}
+
 int get_bt_callback(void *, uintptr_t, const char *filename, int lineno, const char *function) {
   if (bt_keep != -1 && bt_index >= bt_keep) {
     return 0;
@@ -38,7 +42,8 @@ int get_bt_callback(void *, uintptr_t, const char *filename, int lineno, const c
     func_name = demangled;
   }
 
-  if (filename && func_name) {
+  // skip the backtrace from /usr/local
+  if (filename && func_name && !starts_with(filename, "/usr/local")) {
     backtraces.push_back("b-" + std::to_string(bt_index) + " " + std::string(filename) + ":" + std::to_string(lineno) + " " + func_name);
     bt_index++;
   }
