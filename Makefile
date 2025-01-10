@@ -8,23 +8,30 @@ SRC_DIR := src
 INC_DIR := include
 LIB_DIR := lib
 PREFIX := cxx_backtrace
-# BACKTRACE_DIR := libbacktrace/backtrace
 
 LIB := $(LIB_DIR)/lib$(PROJECT).so
-CUR_DIR := $(shell pwd)
 
-CXX ?=
+CXX ?= g++
 
-CFLAGS := -std=c++17
-LDFLAGS ?= -L$(BACKTRACE_DIR)/lib64 -Wl,-rpath=$(BACKTRACE_DIR)/lib64
-LINK_LIBS ?= -lbacktrace
-INCLUDES ?= -I$(INC_DIR) -I$(BACKTRACE_DIR)/include
+CXX_FLAGS ?=
+INCLUDES ?=
+LDFLAGS ?=
+LINK_LIBS ?=
+
+INCLUDES += -I$(INC_DIR)
+
+LDFLAGS += -L$(BACKTRACE_DIR)/lib64 -Wl,-rpath=$(BACKTRACE_DIR)/lib64
+LINK_LIBS += -lbacktrace
+INCLUDES += -I$(BACKTRACE_DIR)/include
+
+CXX_FLAGS += -std=c++17
 
 ifeq ($(DEBUG), 1)
-	CFLAGS += -g -O0
+	CXX_FLAGS += -g -O0
 else
-	CFLAGS += -O3
+	CXX_FLAGS += -O3
 endif
+
 
 SRCS := $(notdir $(wildcard $(SRC_DIR)/*.cpp $(SRC_DIR)/*/*.cpp))
 OBJS := $(addprefix $(OBJ_DIR)/, $(patsubst %.cpp, %.o, $(SRCS)))
@@ -43,10 +50,10 @@ $(LIB): $(OBJS)
 	$(CXX) $(LDFLAGS) -fPIC -shared -o $@ $^ $(LINK_LIBS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) $(CFLAGS) $(INCLUDES) -fPIC -c $< -o $@
+	$(CXX) $(CXX_FLAGS) $(INCLUDES) -fPIC -c $< -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/*/%.cpp
-	$(CXX) $(CFLAGS)$(INCLUDES) -fPIC -c $< -o $@
+	$(CXX) $(CXX_FLAGS)$(INCLUDES) -fPIC -c $< -o $@
 
 
 .PHONY: clean
