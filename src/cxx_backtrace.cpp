@@ -3,12 +3,12 @@
 #include <backtrace.h>
 #include <cxxabi.h>
 
-void *__bt_state = nullptr;
+static void *__bt_state = nullptr;
 
-std::string backtrace_str;
-std::vector<std::string> backtraces;
-int bt_index = 0;
-int bt_keep = -1;
+static std::string backtrace_str;
+static std::vector<std::string> backtraces;
+static int bt_index = 0;
+static int bt_keep = -1;
 
 int bt_callback(void *, uintptr_t, const char *filename, int lineno, const char *function) {
   /// demangle function name
